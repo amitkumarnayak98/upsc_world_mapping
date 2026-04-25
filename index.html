@@ -1,0 +1,1080 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Americas Geography Quiz - Advanced</title>
+    <style>
+      :root {
+        --primary: #2563eb;
+        --primary-hover: #1d4ed8;
+        --bg-color: #f8fafc;
+        --card-bg: #ffffff;
+        --text-main: #1e293b;
+        --text-muted: #64748b;
+        --success: #16a34a;
+        --success-bg: #dcfce7;
+        --error: #dc2626;
+        --error-bg: #fee2e2;
+        --border: #e2e8f0;
+        --hint-bg: #e0e7ff;
+        --hint-text: #4338ca;
+      }
+
+      body {
+        font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-main);
+        line-height: 1.6;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+      }
+
+      .quiz-container {
+        background-color: var(--card-bg);
+        max-width: 800px;
+        width: 100%;
+        border-radius: 12px;
+        box-shadow:
+          0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        padding: 40px;
+        box-sizing: border-box;
+      }
+
+      .header {
+        border-bottom: 2px solid var(--border);
+        padding-bottom: 20px;
+        margin-bottom: 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 1.5rem;
+        color: var(--primary);
+      }
+
+      #progress {
+        font-weight: bold;
+        color: var(--text-muted);
+      }
+
+      .question-text {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+
+      .instruction {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        margin-bottom: 10px;
+        font-style: italic;
+      }
+
+      .hint-badge {
+        display: inline-block;
+        background-color: var(--hint-bg);
+        color: var(--hint-text);
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+      }
+
+      .options-container {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 30px;
+      }
+
+      .option-label {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        border: 2px solid var(--border);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background-color: #fcfcfc;
+      }
+
+      .option-label:hover:not(.disabled) {
+        border-color: #cbd5e1;
+        background-color: #f1f5f9;
+      }
+
+      .option-label.disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        background-color: #f8fafc;
+      }
+
+      .option-label input {
+        margin-right: 15px;
+        transform: scale(1.2);
+        cursor: inherit;
+      }
+
+      .btn {
+        background-color: var(--primary);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        font-size: 1rem;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        font-weight: 600;
+      }
+
+      .btn:hover {
+        background-color: var(--primary-hover);
+      }
+
+      .btn:disabled {
+        background-color: #94a3b8;
+        cursor: not-allowed;
+      }
+
+      .feedback {
+        margin-top: 20px;
+        padding: 15px;
+        border-radius: 8px;
+        display: none;
+      }
+
+      .feedback.correct {
+        display: block;
+        background-color: var(--success-bg);
+        color: var(--success);
+        border: 1px solid #bbf7d0;
+      }
+
+      .feedback.incorrect {
+        display: block;
+        background-color: var(--error-bg);
+        color: var(--error);
+        border: 1px solid #fecaca;
+      }
+
+      .explanation {
+        margin-top: 10px;
+        font-size: 0.95rem;
+        color: var(--text-main);
+      }
+
+      .controls {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 30px;
+        border-top: 2px solid var(--border);
+        padding-top: 20px;
+      }
+
+      #next-btn {
+        display: none;
+        background-color: var(--success);
+      }
+
+      #next-btn:hover {
+        background-color: #15803d;
+      }
+
+      .completion-screen {
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="quiz-container">
+      <div id="quiz-ui">
+        <div class="header">
+          <h1>Americas Geography Exam</h1>
+          <div id="progress">Question 1 / 15</div>
+        </div>
+
+        <div id="question-text" class="question-text"></div>
+        <div id="instruction" class="instruction"></div>
+        <div id="hint-container"></div>
+
+        <div id="options" class="options-container"></div>
+
+        <div id="feedback" class="feedback">
+          <strong id="feedback-title"></strong>
+          <div id="feedback-desc"></div>
+          <div id="explanation" class="explanation"></div>
+        </div>
+
+        <div class="controls">
+          <button id="check-btn" class="btn" onclick="checkAnswer()">
+            Check Answer
+          </button>
+          <button id="next-btn" class="btn" onclick="nextQuestion()">
+            Next Question &rarr;
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const questions = [
+        {
+          text: "Which of the following countries share a land border with Brazil?",
+          type: "checkbox",
+          instruction: "Select ALL that apply.",
+          options: [
+            { text: "Argentina", correct: true },
+            { text: "Peru", correct: true },
+            { text: "Chile", correct: false },
+            { text: "Ecuador", correct: false },
+            { text: "Uruguay", correct: true },
+          ],
+          explanation:
+            "Brazil borders almost every country in South America EXCEPT Chile and Ecuador. Argentina, Peru, and Uruguay all share borders with it.",
+        },
+        {
+          text: "Arrange the following North American deserts from North to South:<br>1. Mojave Desert<br>2. Great Basin Desert<br>3. Chihuahuan Desert<br>4. Sonoran Desert",
+          type: "radio",
+          instruction: "Select the single correct sequence.",
+          options: [
+            { text: "2 - 1 - 4 - 3", correct: true },
+            { text: "1 - 2 - 4 - 3", correct: false },
+            { text: "2 - 4 - 1 - 3", correct: false },
+            { text: "1 - 4 - 2 - 3", correct: false },
+          ],
+          explanation:
+            "Great Basin (Nevada/Utah - Furthest North), Mojave (California/Nevada), Sonoran (Arizona/Mexico), Chihuahuan (Texas/Mexico - Furthest South).",
+        },
+        {
+          text: "Which of the following major rivers of the Americas flow into the Pacific Ocean?",
+          type: "checkbox",
+          instruction: "Select ALL correct rivers.",
+          options: [
+            { text: "Colorado River", correct: true },
+            { text: "Columbia River", correct: true },
+            { text: "Mackenzie River", correct: false },
+            { text: "Yukon River", correct: true },
+            { text: "Orinoco River", correct: false },
+          ],
+          explanation:
+            "The Colorado, Columbia, and Yukon rivers drain into the Pacific Ocean (or its marginal seas like the Bering Sea). The Mackenzie flows to the Arctic, and the Orinoco flows to the Atlantic.",
+        },
+        {
+          text: "The 'Lithium Triangle' of South America, known for massive brine lithium deposits, encompasses which three countries?",
+          type: "radio",
+          instruction: "Select the single correct option.",
+          options: [
+            { text: "Argentina, Bolivia, and Peru", correct: false },
+            { text: "Argentina, Bolivia, and Chile", correct: true },
+            { text: "Chile, Peru, and Ecuador", correct: false },
+            { text: "Brazil, Paraguay, and Uruguay", correct: false },
+          ],
+          explanation:
+            "The Lithium Triangle is located around the borders of Argentina, Bolivia, and Chile, centered around the Atacama Desert and neighboring arid regions.",
+        },
+        {
+          text: "Which of the Great Lakes are shared by BOTH the United States and Canada?",
+          type: "checkbox",
+          instruction: "Select ALL that apply.",
+          options: [
+            { text: "Lake Superior", correct: true },
+            { text: "Lake Michigan", correct: false },
+            { text: "Lake Huron", correct: true },
+            { text: "Lake Ontario", correct: true },
+          ],
+          explanation:
+            "Lakes Superior, Huron, Erie, and Ontario lie on the border between the US and Canada. Lake Michigan is the only Great Lake located entirely within the United States.",
+        },
+        {
+          text: "Assertion (A): The Atacama Desert is one of the driest places on Earth.<br>Reason (R): It is located on the eastern, leeward side of the Andes Mountains, causing a severe rain shadow effect.",
+          type: "radio",
+          instruction: "Select the correct code.",
+          options: [
+            { text: "Both A and R are true and R explains A", correct: false },
+            {
+              text: "Both A and R are true but R does not explain A",
+              correct: false,
+            },
+            { text: "A is true but R is false", correct: true },
+            { text: "A is false but R is true", correct: false },
+          ],
+          explanation:
+            "The Atacama Desert is on the WESTERN coast of South America (Chile), not the eastern. Its extreme aridity is caused by the cold Humboldt Current and atmospheric subsidence.",
+        },
+        {
+          text: "Which of these capital cities are located within the Andes mountain range?",
+          type: "checkbox",
+          instruction: "Select ALL correct capitals.",
+          options: [
+            { text: "Bogota (Colombia)", correct: true },
+            { text: "Quito (Ecuador)", correct: true },
+            { text: "La Paz (Bolivia)", correct: true },
+            { text: "Buenos Aires (Argentina)", correct: false },
+            { text: "Lima (Peru)", correct: false },
+          ],
+          explanation:
+            "Bogota, Quito, and La Paz are all high-altitude capitals situated within the Andes. Buenos Aires is on the Pampas plains, and Lima is on the arid Pacific coastal strip, not high in the mountains.",
+        },
+        {
+          text: "Which of the following physical features are located in South America?",
+          type: "checkbox",
+          instruction: "Select ALL that apply.",
+          options: [
+            { text: "Patagonia Plateau", correct: true },
+            { text: "Gran Chaco", correct: true },
+            { text: "Laurentian Shield", correct: false },
+            { text: "Pampas", correct: true },
+            { text: "Edwards Plateau", correct: false },
+          ],
+          explanation:
+            "Patagonia, Gran Chaco, and Pampas are in South America. The Laurentian Shield (Canadian Shield) and Edwards Plateau (Texas) are in North America.",
+        },
+        {
+          text: "Match the Straits with the landmasses they separate:<br>A. Bering Strait<br>B. Strait of Magellan<br>C. Florida Strait<br><br>1. Mainland South America and Tierra del Fuego<br>2. Asia and North America<br>3. Florida and Cuba",
+          type: "radio",
+          instruction: "Select the correct matching code.",
+          options: [
+            { text: "A-2, B-1, C-3", correct: true },
+            { text: "A-1, B-2, C-3", correct: false },
+            { text: "A-2, B-3, C-1", correct: false },
+            { text: "A-3, B-1, C-2", correct: false },
+          ],
+          explanation:
+            "Bering separates Asia/North America. Magellan separates mainland South America from the island of Tierra del Fuego. Florida separates the US (Florida) from Cuba.",
+        },
+        {
+          text: "Which of the following are cold ocean currents that affect the climate of the Americas?",
+          type: "checkbox",
+          instruction: "Select ALL correct ocean currents.",
+          options: [
+            { text: "Humboldt (Peru) Current", correct: true },
+            { text: "Gulf Stream", correct: false },
+            { text: "California Current", correct: true },
+            { text: "Falkland Current", correct: true },
+            { text: "Brazil Current", correct: false },
+          ],
+          explanation:
+            "Humboldt, California, and Falkland are all cold currents moving toward the equator. Gulf Stream and Brazil Current are warm water currents moving away from the equator.",
+        },
+        {
+          text: "Regarding the Panama Canal, which of the following statements is true?",
+          type: "radio",
+          instruction: "Select the single correct option.",
+          options: [
+            {
+              text: "It connects the Atlantic and Pacific Oceans directly at sea level without locks.",
+              correct: false,
+            },
+            {
+              text: "Ships passing from the Atlantic to the Pacific travel in a south-easterly direction.",
+              correct: true,
+            },
+            {
+              text: "It was built entirely by the French and handed over to Panama in 1914.",
+              correct: false,
+            },
+            {
+              text: "Lake Nicaragua serves as the primary freshwater source for its lock system.",
+              correct: false,
+            },
+          ],
+          explanation:
+            "Due to the S-curve of the Panamanian isthmus, the Pacific entrance is actually east of the Atlantic entrance, causing ships to travel south-east. It uses a lock system, was finished by the USA, and uses Lake Gatun, not Lake Nicaragua.",
+        },
+        {
+          text: "Which of these Central American countries do NOT have a coastline on the Caribbean Sea (Atlantic)?",
+          type: "checkbox",
+          instruction: "Select ALL that apply.",
+          options: [
+            { text: "El Salvador", correct: true },
+            { text: "Belize", correct: false },
+            { text: "Honduras", correct: false },
+            { text: "Costa Rica", correct: false },
+          ],
+          explanation:
+            "El Salvador is the only Central American country with no Caribbean coastline (it only touches the Pacific). Belize has no Pacific coastline. Honduras and Costa Rica have both.",
+        },
+        {
+          text: "Which of the following mountain ranges are located in North America?",
+          type: "checkbox",
+          instruction: "Select ALL correct ranges.",
+          options: [
+            { text: "Appalachian Mountains", correct: true },
+            { text: "Sierra Madre", correct: true },
+            { text: "Andes Mountains", correct: false },
+            { text: "Brooks Range", correct: true },
+            { text: "Guiana Highlands", correct: false },
+          ],
+          explanation:
+            "The Appalachians (Eastern US/Canada), Sierra Madre (Mexico), and Brooks Range (Alaska) are in North America. The Andes and Guiana Highlands are in South America.",
+        },
+        {
+          text: "Assertion (A): Canadian ports on the Pacific coast, like Vancouver, remain ice-free in winter, unlike Atlantic ports at similar latitudes.<br>Reason (R): The warm North Pacific Drift current warms the western coast of Canada.",
+          type: "radio",
+          instruction: "Select the correct code.",
+          options: [
+            { text: "Both A and R are true and R explains A", correct: true },
+            {
+              text: "Both A and R are true but R does not explain A",
+              correct: false,
+            },
+            { text: "A is true but R is false", correct: false },
+            { text: "A is false but R is true", correct: false },
+          ],
+          explanation:
+            "The North Pacific Drift brings warmer water to the coast of British Columbia, keeping ports like Vancouver ice-free. On the east coast, the cold Labrador Current freezes the Atlantic ports at the same latitude.",
+        },
+        {
+          text: "Which of the following countries are landlocked in the Americas?",
+          type: "checkbox",
+          instruction: "Select ALL landlocked countries.",
+          options: [
+            { text: "Bolivia", correct: true },
+            { text: "Paraguay", correct: true },
+            { text: "Uruguay", correct: false },
+            { text: "Suriname", correct: false },
+          ],
+          explanation:
+            "Bolivia and Paraguay are the only two landlocked countries in South America (and the entirety of the Americas). Uruguay and Suriname both have Atlantic coastlines.",
+        },
+        {
+          text: "The Rio de la Plata is a massive estuary and important economic waterway formed by the confluence of which of the following rivers?",
+          type: "checkbox",
+          instruction:
+            "Select ALL rivers that form the Rio de la Plata system.",
+          options: [
+            { text: "Paraná River", correct: true },
+            { text: "Uruguay River", correct: true },
+            { text: "Amazon River", correct: false },
+            { text: "Paraguay River", correct: true },
+            { text: "Orinoco River", correct: false },
+          ],
+          explanation:
+            "The Rio de la Plata basin is drained mainly by the Paraná, Paraguay, and Uruguay rivers. The Amazon and Orinoco are entirely separate, more northern river systems.",
+        },
+        {
+          text: "Arrange the following prominent physical features of South America from North to South:<br>1. Mato Grosso Plateau<br>2. Guiana Highlands<br>3. Pampas<br>4. Amazon Basin",
+          type: "radio",
+          instruction: "Select the correct sequence.",
+          options: [
+            { text: "2 - 4 - 1 - 3", correct: true },
+            { text: "4 - 2 - 1 - 3", correct: false },
+            { text: "2 - 1 - 4 - 3", correct: false },
+            { text: "1 - 2 - 4 - 3", correct: false },
+          ],
+          explanation:
+            "Moving North to South: Guiana Highlands (Venezuela/Guyana), the Amazon Basin (Equatorial Brazil), Mato Grosso Plateau (Central-West Brazil), and the Pampas (Argentina).",
+        },
+        {
+          text: "Which of the following North American mountain ranges are known for significant recent (geologically speaking) volcanic activity?",
+          type: "checkbox",
+          instruction: "Select ALL that apply.",
+          options: [
+            { text: "Cascade Range", correct: true },
+            { text: "Appalachian Mountains", correct: false },
+            { text: "Aleutian Range", correct: true },
+            { text: "Brooks Range", correct: false },
+          ],
+          explanation:
+            "The Cascade Range (Mt. St. Helens, Mt. Rainier) and Aleutian Range are part of the Pacific Ring of Fire. The Appalachians and Brooks Range are old fold mountains without active volcanism.",
+        },
+        {
+          text: "The Equator passes through which of the following South American countries?",
+          type: "checkbox",
+          instruction: "Select ALL correct countries.",
+          options: [
+            { text: "Ecuador", correct: true },
+            { text: "Colombia", correct: true },
+            { text: "Peru", correct: false },
+            { text: "Brazil", correct: true },
+            { text: "Venezuela", correct: false },
+          ],
+          explanation:
+            "The Equator passes through exactly three countries in South America: Ecuador, Colombia, and Brazil.",
+        },
+        {
+          text: "Assertion (A): The Patagonian desert is considered a cold winter desert.<br>Reason (R): It lies in the rain shadow of the Andes mountains, blocking the moisture-laden westerlies from the Pacific Ocean.",
+          type: "radio",
+          instruction: "Select the correct code.",
+          options: [
+            { text: "Both A and R are true and R explains A", correct: true },
+            {
+              text: "Both A and R are true but R does not explain A",
+              correct: false,
+            },
+            { text: "A is true but R is false", correct: false },
+            { text: "A is false but R is true", correct: false },
+          ],
+          explanation:
+            "Patagonia is a cold desert. Because it is located south of 40°S, the prevailing winds are Westerlies. The high Andes block these wet winds, creating a massive rain shadow on the eastern (Argentine) side.",
+        },
+        {
+          text: "The Drake Passage, known as one of the most treacherous bodies of water on Earth, separates which two landmasses?",
+          type: "radio",
+          instruction: "Select the single correct option.",
+          options: [
+            { text: "South America and Antarctica", correct: true },
+            { text: "North America and Asia", correct: false },
+            { text: "South America and the Falkland Islands", correct: false },
+            { text: "Greenland and Baffin Island", correct: false },
+          ],
+          explanation:
+            "The Drake Passage is the body of water between South America's Cape Horn, Chile, and the South Shetland Islands of Antarctica.",
+        },
+        {
+          text: "Which of the following countries share a land border with Mexico?",
+          type: "checkbox",
+          instruction: "Select ALL that apply.",
+          options: [
+            { text: "United States of America", correct: true },
+            { text: "Guatemala", correct: true },
+            { text: "Belize", correct: true },
+            { text: "Honduras", correct: false },
+            { text: "El Salvador", correct: false },
+          ],
+          explanation:
+            "Mexico borders the USA to the north, and Guatemala and Belize to the southeast. It does not touch Honduras or El Salvador.",
+        },
+        {
+          text: "Match the prominent Islands to the sovereign nations that administer them:<br>A. Galapagos Islands<br>B. Falkland Islands<br>C. Easter Island<br><br>1. Chile<br>2. Ecuador<br>3. United Kingdom",
+          type: "radio",
+          instruction: "Select the correct matching code.",
+          options: [
+            { text: "A-2, B-3, C-1", correct: true },
+            { text: "A-1, B-2, C-3", correct: false },
+            { text: "A-2, B-1, C-3", correct: false },
+            { text: "A-3, B-2, C-1", correct: false },
+          ],
+          explanation:
+            "The Galapagos belong to Ecuador. The Falkland Islands (Islas Malvinas) are a British Overseas Territory (though claimed by Argentina). Easter Island is a territory of Chile.",
+        },
+        {
+          text: "Which of the following statements regarding the mineral wealth of South America are correct?",
+          type: "checkbox",
+          instruction: "Select ALL true statements.",
+          options: [
+            {
+              text: "Chile is the world's leading producer of copper.",
+              correct: true,
+            },
+            {
+              text: "Bolivia is historically known for significant tin deposits.",
+              correct: true,
+            },
+            {
+              text: "Venezuela has the largest proven oil reserves in the world.",
+              correct: true,
+            },
+            {
+              text: "Brazil is the world's leading producer of high-grade coal.",
+              correct: false,
+            },
+          ],
+          explanation:
+            "Chile (copper), Bolivia (tin), and Venezuela (oil) are accurate. Brazil is rich in iron ore and bauxite, but it is NOT a leading producer of coal; it actually has to import high-grade metallurgical coal.",
+        },
+        {
+          text: "The Tropic of Capricorn (23.5° S) passes through which of the following countries in the Americas?",
+          type: "checkbox",
+          instruction: "Select ALL correct countries.",
+          options: [
+            { text: "Chile", correct: true },
+            { text: "Argentina", correct: true },
+            { text: "Paraguay", correct: true },
+            { text: "Brazil", correct: true },
+            { text: "Bolivia", correct: false },
+          ],
+          explanation:
+            "The Tropic of Capricorn passes through four South American countries: Chile, Argentina, Paraguay, and Brazil. It runs just south of Bolivia.",
+        },
+        {
+          text: "The massive 'Cerrado' ecoregion, known for its vast biodiversity, is primarily characterized by which type of biome?",
+          type: "radio",
+          instruction: "Select the single correct option.",
+          options: [
+            { text: "Equatorial Rainforest", correct: false },
+            { text: "Tropical Savanna", correct: true },
+            { text: "Cold Desert", correct: false },
+            { text: "Temperate Grassland", correct: false },
+          ],
+          explanation:
+            "The Cerrado, located mostly in Brazil, is a vast tropical savanna ecoregion characterized by scattered trees and open grasslands.",
+        },
+        {
+          text: "During an El Niño climatic event, what typical oceanic anomaly occurs along the western coast of South America (Peru/Ecuador)?",
+          type: "radio",
+          instruction: "Select the single correct option.",
+          options: [
+            {
+              text: "Coastal waters become unusually cold, leading to severe droughts.",
+              correct: false,
+            },
+            {
+              text: "Coastal waters become unusually warm, leading to increased rainfall and flooding.",
+              correct: true,
+            },
+            {
+              text: "The Humboldt current accelerates, bringing an abundance of fish.",
+              correct: false,
+            },
+            {
+              text: "Salinity drops drastically, freezing the coastal waters.",
+              correct: false,
+            },
+          ],
+          explanation:
+            "El Niño weakens the Trade Winds, allowing warm equatorial water to slosh back toward the South American coast. This replaces the cold, nutrient-rich Humboldt current, causing massive rains/flooding and devastating local fisheries.",
+        },
+        {
+          text: "Which of the following statements are TRUE regarding the Mississippi-Missouri river system?",
+          type: "checkbox",
+          instruction: "Select ALL true statements.",
+          options: [
+            {
+              text: "It is the longest river system in North America.",
+              correct: true,
+            },
+            {
+              text: "It forms a massive 'bird-foot' delta before emptying into the ocean.",
+              correct: true,
+            },
+            {
+              text: "It acts as a natural border between the USA and Mexico.",
+              correct: false,
+            },
+            {
+              text: "It flows predominantly from East to West.",
+              correct: false,
+            },
+          ],
+          explanation:
+            "It is the longest river system in NA and forms a famous bird-foot delta at the Gulf of Mexico. It flows North to South (not East to West) and the Rio Grande (not the Mississippi) borders Mexico.",
+        },
+        {
+          text: "Consider the following pairs of prominent Lakes and their respective countries:<br>1. Lake Maracaibo - Venezuela<br>2. Great Bear Lake - Canada<br>3. Lake Nicaragua - Nicaragua<br>Which of the above are correctly matched?",
+          type: "radio",
+          instruction: "Select the correct code.",
+          options: [
+            { text: "1 and 2 only", correct: false },
+            { text: "2 and 3 only", correct: false },
+            { text: "1 and 3 only", correct: false },
+            { text: "1, 2, and 3", correct: true },
+          ],
+          explanation:
+            "All pairs are correctly matched. Lake Maracaibo (known for lightning and oil) is in Venezuela, Great Bear Lake is the largest lake entirely in Canada, and Lake Nicaragua is the largest lake in Central America.",
+        },
+        {
+          text: "The Grand Canyon, one of the most extensively studied geological landscapes in the world, was carved primarily by which river?",
+          type: "radio",
+          instruction: "Select the single correct option.",
+          options: [
+            { text: "Colorado River", correct: true },
+            { text: "Rio Grande", correct: false },
+            { text: "Columbia River", correct: false },
+            { text: "Snake River", correct: false },
+          ],
+          explanation:
+            "The Colorado River carved the Grand Canyon over millions of years as the Colorado Plateau was geologically uplifted.",
+        },
+        {
+          text: "Consider the following pairs of prominent South American ecoregions and their characteristics:<br>1. Pantanal - The world's largest tropical wetland.<br>2. Caatinga - A semi-arid scrub forest region in northeastern Brazil.<br>3. Llanos - Temperate grasslands in Argentina known for cattle ranching.<br>How many pairs given above are correctly matched?",
+          type: "radio",
+          instruction: "Select the correct option.",
+          options: [
+            { text: "Only one pair", correct: false },
+            { text: "Only two pairs", correct: true },
+            { text: "All three pairs", correct: false },
+            { text: "None of the pairs", correct: false },
+          ],
+          explanation:
+            "Pairs 1 and 2 are correct. Pair 3 is incorrect: The Llanos are TROPICAL grassland plains in Venezuela and Colombia. The temperate grasslands in Argentina are called the Pampas.",
+        },
+        {
+          text: "Assertion (A): The Grand Banks of Newfoundland in Canada are highly susceptible to dense, persistent sea fog.<br>Reason (R): This region marks the convergence zone of the warm Gulf Stream and the cold Labrador Current.",
+          type: "radio",
+          instruction: "Select the correct code.",
+          options: [
+            {
+              text: "Both A and R are true, and R is the correct explanation of A",
+              correct: true,
+            },
+            {
+              text: "Both A and R are true, but R is not the correct explanation of A",
+              correct: false,
+            },
+            { text: "A is true, but R is false", correct: false },
+            { text: "A is false, but R is true", correct: false },
+          ],
+          explanation:
+            "When the warm, moist air sitting above the Gulf Stream meets the freezing waters of the Labrador Current, the air cools rapidly below its dew point, creating the thick, famous fogs of the Grand Banks (which is also what makes it a world-class fishing ground).",
+        },
+        {
+          text: "Which of the following tectonic plates are actively subducting beneath the western coast of the Americas, creating major volcanic and seismic activity?",
+          type: "checkbox",
+          instruction: "Select ALL that apply.",
+          options: [
+            { text: "Nazca Plate", correct: true },
+            { text: "Cocos Plate", correct: true },
+            { text: "Juan de Fuca Plate", correct: true },
+            { text: "Caribbean Plate", correct: false },
+            { text: "Scotia Plate", correct: false },
+          ],
+          explanation:
+            "The Nazca Plate subducts under South America (forming the Andes). The Cocos Plate subducts under Central America. The Juan de Fuca Plate subducts under North America (forming the Cascades). The Caribbean and Scotia plates are mostly transform/strike-slip boundaries in this context.",
+        },
+        {
+          text: "Arrange the following Central American countries in geographical order from North to South:<br>1. Nicaragua<br>2. Honduras<br>3. Costa Rica<br>4. Guatemala",
+          type: "radio",
+          instruction: "Select the correct sequence.",
+          options: [
+            { text: "4 - 2 - 1 - 3", correct: true },
+            { text: "2 - 4 - 1 - 3", correct: false },
+            { text: "4 - 1 - 2 - 3", correct: false },
+            { text: "1 - 2 - 4 - 3", correct: false },
+          ],
+          explanation:
+            "Moving from Mexico downward (North to South): Guatemala borders Mexico, followed by Honduras, then Nicaragua, and finally Costa Rica (which borders Panama).",
+        },
+        {
+          text: "Which of the following mountain sub-ranges are NOT geographically part of the Appalachian Mountain system?",
+          type: "checkbox",
+          instruction: "Select ALL that apply.",
+          options: [
+            { text: "Blue Ridge Mountains", correct: false },
+            { text: "Great Smoky Mountains", correct: false },
+            { text: "Black Hills", correct: true },
+            { text: "White Mountains", correct: false },
+            { text: "Sierra Nevada", correct: true },
+          ],
+          explanation:
+            "The Blue Ridge, Great Smokies, and White Mountains are all part of the eastern Appalachian system. The Black Hills are an isolated range in South Dakota (Great Plains), and the Sierra Nevada is in California (West Coast).",
+        },
+        {
+          text: "Consider the following statements regarding the Amazon River System:<br>1. The Rio Negro is the largest left-bank tributary and is known for its dark, highly acidic 'blackwater'.<br>2. The Amazon basin discharges roughly 20% of the world's total freshwater supply into the oceans.<br>3. The river forms a massive classic triangular delta at its mouth before entering the Atlantic.",
+          type: "radio",
+          instruction: "Select the correct statements.",
+          options: [
+            { text: "1 and 2 only", correct: true },
+            { text: "2 and 3 only", correct: false },
+            { text: "1 and 3 only", correct: false },
+            { text: "1, 2, and 3", correct: false },
+          ],
+          explanation:
+            "Statements 1 and 2 are correct. Statement 3 is incorrect: The Amazon does not form a classic protruding triangular delta; it forms a massive estuary/braided mouth heavily scoured by strong ocean tides and the equatorial current.",
+        },
+        {
+          text: "Which of the following indigenous peoples are correctly matched with their historical and current geographic concentration in the Americas?",
+          type: "checkbox",
+          instruction: "Select ALL correct pairs.",
+          options: [
+            { text: "Inuit - Northern Canada and Alaska", correct: true },
+            {
+              text: "Mapuche - Central/Southern Chile and Argentina",
+              correct: true,
+            },
+            {
+              text: "Guarani - Paraguay and Southwestern Brazil",
+              correct: true,
+            },
+            {
+              text: "Quechua - The Pampas region of Argentina",
+              correct: false,
+            },
+          ],
+          explanation:
+            "Inuit, Mapuche, and Guarani are correctly matched. The Quechua people are historically concentrated in the Andean highlands (Peru, Bolivia, Ecuador), not the low-lying Pampas of Argentina.",
+        },
+        {
+          text: "Which South American country is the ONLY one to possess coastlines on BOTH the Pacific Ocean and the Caribbean Sea (Atlantic)?",
+          type: "radio",
+          instruction: "Select the single correct option.",
+          options: [
+            { text: "Venezuela", correct: false },
+            { text: "Colombia", correct: true },
+            { text: "Panama", correct: false },
+            { text: "Ecuador", correct: false },
+          ],
+          explanation:
+            "Colombia is uniquely situated at the northwestern tip of South America, granting it coasts on both the Pacific Ocean (to the west) and the Caribbean Sea (to the north). Panama is in Central America, not South America.",
+        },
+        {
+          text: "Assertion (A): The interior plains of North America experience massive temperature extremes between summer and winter (high continentality).<br>Reason (R): The major mountain ranges of North America run North-South, failing to block freezing Arctic air from plunging south or warm Gulf air from surging north.",
+          type: "radio",
+          instruction: "Select the correct code.",
+          options: [
+            {
+              text: "Both A and R are true, and R is the correct explanation of A",
+              correct: true,
+            },
+            {
+              text: "Both A and R are true, but R is not the correct explanation of A",
+              correct: false,
+            },
+            { text: "A is true, but R is false", correct: false },
+            { text: "A is false, but R is true", correct: false },
+          ],
+          explanation:
+            "Unlike Europe, where the Alps run East-West and block polar air, the Rockies and Appalachians run North-South. This creates a wide-open 'funnel' in the Great Plains, allowing brutal Arctic blasts in winter and baking heat from the Gulf in summer.",
+        },
+        {
+          text: "Regarding the Great Lakes waterways, the Welland Canal was constructed primarily to allow ships to bypass which major natural obstacle?",
+          type: "radio",
+          instruction: "Select the single correct option.",
+          options: [
+            { text: "The rapids of the St. Lawrence River", correct: false },
+            { text: "The freezing waters of Lake Superior", correct: false },
+            { text: "Niagara Falls", correct: true },
+            { text: "The shallow straits of Mackinac", correct: false },
+          ],
+          explanation:
+            "The Welland Canal connects Lake Ontario and Lake Erie, featuring a massive lock system designed specifically to allow maritime traffic to bypass the impassable drop of Niagara Falls.",
+        },
+        {
+          text: "Which of the following islands/archipelagos are located in the Caribbean Sea?",
+          type: "checkbox",
+          instruction: "Select ALL that apply.",
+          options: [
+            { text: "Greater Antilles (Cuba, Hispaniola)", correct: true },
+            { text: "Bahamas", correct: false },
+            { text: "Bermuda", correct: false },
+            { text: "Lesser Antilles (Barbados, Trinidad)", correct: true },
+            { text: "Cayman Islands", correct: true },
+          ],
+          explanation:
+            "The Greater and Lesser Antilles, along with the Cayman Islands, are in the Caribbean. The Bahamas and Bermuda are technically located entirely within the North Atlantic Ocean, geographically north and east of the Caribbean Sea.",
+        },
+        {
+          text: "The 'Fall Line' in the eastern United States is a significant geographical feature historically tied to urban development. What does it represent?",
+          type: "radio",
+          instruction: "Select the single correct option.",
+          options: [
+            {
+              text: "The boundary where the deciduous forest meets the boreal forest.",
+              correct: false,
+            },
+            {
+              text: "The tectonic fault line separating the North American and Atlantic plates.",
+              correct: false,
+            },
+            {
+              text: "The geomorphological boundary between the hard rocks of the Piedmont and the softer soils of the Atlantic Coastal Plain.",
+              correct: true,
+            },
+            {
+              text: "The maximum southern extent of the Pleistocene glaciations.",
+              correct: false,
+            },
+          ],
+          explanation:
+            "The Fall Line marks the drop from the upland Piedmont plateau to the coastal plain. It is characterized by waterfalls and rapids, which stopped early ships from traveling further inland and provided water power, leading to the founding of major cities like Philadelphia, Baltimore, and Washington D.C.",
+        },
+        {
+          text: "Consider the following statements regarding South American political geography:<br>1. French Guiana is an independent nation located north of Brazil.<br>2. Suriname was formerly known as Dutch Guiana.<br>3. Guyana is the only English-speaking country in South America.",
+          type: "radio",
+          instruction: "Select the correct statements.",
+          options: [
+            { text: "1 and 2 only", correct: false },
+            { text: "2 and 3 only", correct: true },
+            { text: "1 and 3 only", correct: false },
+            { text: "1, 2, and 3", correct: false },
+          ],
+          explanation:
+            "Statements 2 and 3 are true. Statement 1 is false: French Guiana is NOT an independent nation; it is an overseas department/region of France (which is why the European Space Agency launches rockets from there).",
+        },
+        {
+          text: "The 'Chukchi Sea' and the 'Beaufort Sea' are marginal seas of the Arctic Ocean that wash the northern shores of which North American geographical features?",
+          type: "checkbox",
+          instruction: "Select ALL that apply.",
+          options: [
+            { text: "Alaska", correct: true },
+            { text: "Greenland", correct: false },
+            { text: "Canadian Northwest Territories/Yukon", correct: true },
+            { text: "Labrador Peninsula", correct: false },
+          ],
+          explanation:
+            "The Chukchi and Beaufort seas sit north of Alaska (USA) and the northwestern territories of Canada. Greenland and Labrador are washed by the Baffin Bay and Labrador Sea to the east.",
+        },
+        {
+          text: "Arrange the following major South American cities from lowest elevation to highest elevation above sea level:<br>1. La Paz (Bolivia)<br>2. Buenos Aires (Argentina)<br>3. Bogota (Colombia)<br>4. Quito (Ecuador)",
+          type: "radio",
+          instruction: "Select the correct sequence.",
+          options: [
+            { text: "2 - 3 - 4 - 1", correct: true },
+            { text: "2 - 4 - 3 - 1", correct: false },
+            { text: "1 - 4 - 3 - 2", correct: false },
+            { text: "2 - 1 - 4 - 3", correct: false },
+          ],
+          explanation:
+            "Buenos Aires is a coastal port city on the plains (~25m). Bogota is high in the Andes (~2,640m). Quito is slightly higher (~2,850m). La Paz is the highest administrative capital in the world, sitting in a massive canyon on the Altiplano (~3,640m to over 4,000m).",
+        },
+      ];
+
+      let currentQuestionIndex = 0;
+      let score = 0;
+
+      const questionTextEl = document.getElementById("question-text");
+      const instructionEl = document.getElementById("instruction");
+      const hintContainerEl = document.getElementById("hint-container");
+      const optionsEl = document.getElementById("options");
+      const progressEl = document.getElementById("progress");
+      const feedbackEl = document.getElementById("feedback");
+      const feedbackTitleEl = document.getElementById("feedback-title");
+      const feedbackDescEl = document.getElementById("feedback-desc");
+      const explanationEl = document.getElementById("explanation");
+      const checkBtn = document.getElementById("check-btn");
+      const nextBtn = document.getElementById("next-btn");
+
+      function loadQuestion() {
+        const q = questions[currentQuestionIndex];
+        questionTextEl.innerHTML = q.text;
+        instructionEl.innerText = q.instruction;
+        progressEl.innerText = `Question ${currentQuestionIndex + 1} / ${questions.length}`;
+
+        // Calculate and display Hint
+        const correctOptionsCount = q.options.filter((o) => o.correct).length;
+        const noun = correctOptionsCount === 1 ? "option is" : "options are";
+        hintContainerEl.innerHTML = `<div class="hint-badge">💡 Hint: ${correctOptionsCount} ${noun} correct.</div>`;
+
+        // Reset state
+        optionsEl.innerHTML = "";
+        feedbackEl.className = "feedback";
+        checkBtn.style.display = "block";
+        nextBtn.style.display = "none";
+
+        // Render options
+        q.options.forEach((opt, index) => {
+          const label = document.createElement("label");
+          label.className = "option-label";
+          label.id = `label-${index}`;
+
+          const input = document.createElement("input");
+          input.type = q.type; // 'radio' or 'checkbox'
+          input.name = "quiz-option";
+          input.value = index;
+
+          // Add live constraint listener
+          input.addEventListener("change", () =>
+            handleOptionSelection(q.type, correctOptionsCount),
+          );
+
+          label.appendChild(input);
+          label.appendChild(document.createTextNode(opt.text));
+          optionsEl.appendChild(label);
+        });
+      }
+
+      function handleOptionSelection(type, maxAllowed) {
+        if (type !== "checkbox") return;
+
+        const inputs = document.querySelectorAll('input[name="quiz-option"]');
+        const checkedCount = document.querySelectorAll(
+          'input[name="quiz-option"]:checked',
+        ).length;
+
+        inputs.forEach((input, index) => {
+          const label = document.getElementById(`label-${index}`);
+          // If we've reached the max allowed correct answers, disable the un-checked ones
+          if (checkedCount >= maxAllowed) {
+            if (!input.checked) {
+              input.disabled = true;
+              label.classList.add("disabled");
+            }
+          } else {
+            // Otherwise ensure all are enabled
+            input.disabled = false;
+            label.classList.remove("disabled");
+          }
+        });
+      }
+
+      function checkAnswer() {
+        const q = questions[currentQuestionIndex];
+        const inputs = document.querySelectorAll('input[name="quiz-option"]');
+
+        let allCorrectChecked = true;
+        let noWrongChecked = true;
+        let anythingChecked = false;
+
+        inputs.forEach((input, index) => {
+          const isChecked = input.checked;
+          const isCorrectOption = q.options[index].correct;
+
+          if (isChecked) anythingChecked = true;
+
+          // If it's a correct option and not checked
+          if (isCorrectOption && !isChecked) {
+            allCorrectChecked = false;
+          }
+
+          // If it's a wrong option and checked
+          if (!isCorrectOption && isChecked) {
+            noWrongChecked = false;
+          }
+        });
+
+        if (!anythingChecked) {
+          alert("Please select an answer before checking.");
+          return;
+        }
+
+        // Post-Submission Blocking: Disable ALL inputs and labels so answers can't be changed after checking
+        inputs.forEach((input, index) => {
+          input.disabled = true;
+          document.getElementById(`label-${index}`).classList.add("disabled");
+        });
+
+        if (allCorrectChecked && noWrongChecked) {
+          // Correct Answer!
+          score++;
+          feedbackEl.className = "feedback correct";
+          feedbackTitleEl.innerText = "Correct!";
+          feedbackDescEl.innerText = "";
+        } else {
+          // Incorrect Answer
+          feedbackEl.className = "feedback incorrect";
+          feedbackTitleEl.innerText = "Incorrect.";
+          feedbackDescEl.innerText = "Review the explanation below:";
+        }
+
+        // Always show the explanation
+        explanationEl.innerText = q.explanation;
+
+        // Swap buttons to allow moving to the next question
+        checkBtn.style.display = "none";
+        nextBtn.style.display = "block";
+      }
+
+      function nextQuestion() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < questions.length) {
+          loadQuestion();
+        } else {
+          showFinalScreen();
+        }
+      }
+
+      function showFinalScreen() {
+        const quizUi = document.getElementById("quiz-ui");
+        quizUi.innerHTML = `
+            <div class="completion-screen">
+                <h1 style="font-size: 2.5rem; margin-bottom: 20px;">Quiz Complete!</h1>
+                <p style="font-size: 1.5rem; font-weight: bold; color: var(--primary); margin-bottom: 10px;">Final Score: ${score} / ${questions.length}</p>
+                <p style="font-size: 1.2rem; margin-bottom: 30px;">Great job completing the advanced geography review.</p>
+                <button class="btn" onclick="location.reload()">Restart Quiz</button>
+            </div>
+        `;
+      }
+
+      // Initialize first question
+      loadQuestion();
+    </script>
+  </body>
+</html>
